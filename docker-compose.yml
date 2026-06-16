@@ -97,6 +97,8 @@ services:
       KAVENEGAR_API_KEY: ${KAVENEGAR_API_KEY:-}
       KAVENEGAR_OTP_TEMPLATE: ${KAVENEGAR_OTP_TEMPLATE:-systemato-otp}
       KAVENEGAR_SENDER: ${KAVENEGAR_SENDER:-}
+      # تا وقتی پنل SMS آماده نشده false بماند: OTP در پاسخ برمی‌گردد و SMS ارسال نمی‌شود
+      SMS_ENABLED: ${SMS_ENABLED:-false}
       MINIO_ENDPOINT: minio
       MINIO_PORT: "9000"
       MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}

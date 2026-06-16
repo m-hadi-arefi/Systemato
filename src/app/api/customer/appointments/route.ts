@@ -58,7 +58,8 @@ export async function POST(req: NextRequest) {
 
   // اطلاع به صاحب بیزینس
   const owner = await prisma.user.findUnique({ where: { id: business.ownerId } })
-  if (owner && process.env.NODE_ENV === 'production') {
+  if (owner) {
+    // اگر SMS_ENABLED غیرفعال باشد، sendSms به‌صورت no-op برمی‌گردد.
     sendSms(owner.phone, `درخواست نوبت جدید در ${business.name}`).catch(console.error)
   }
 

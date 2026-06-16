@@ -37,7 +37,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     DONE: `از مراجعه شما به ${business.name} متشکریم`,
   }
   const msg = messages[parsed.data.status]
-  if (msg && process.env.NODE_ENV === 'production') {
+  if (msg) {
+    // اگر SMS_ENABLED غیرفعال باشد، sendSms به‌صورت no-op برمی‌گردد.
     sendSms(appointment.customer.phone, msg).catch(console.error)
   }
 
