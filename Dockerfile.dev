@@ -1,0 +1,17 @@
+FROM node:20-slim
+WORKDIR /app
+# OpenSSL برای Prisma + curl برای healthcheck
+RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates curl \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY package.json package-lock.json ./
+RUN npm ci
+
+COPY . .
+RUN npx prisma generate
+
+EXPOSE 3000
+ENV PORT=3000
+
+# حالت توسعه با hot-reload
+CMD ["npm", "run", "dev"]
