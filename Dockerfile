@@ -1,8 +1,10 @@
-FROM node:20-alpine AS base
+FROM node:20-slim AS base
 WORKDIR /app
-RUN apk add --no-cache libc6-compat
+# OpenSSL برای Prisma + curl برای healthcheck (روی Debian پایدارتر از Alpine است)
+RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates curl \
+    && rm -rf /var/lib/apt/lists/*
 
-# ── deps: فقط وابستگی‌های production ──────────────────────────────────
+# ── deps: نصب وابستگی‌ها ────────────────────────────────────────────────
 FROM base AS deps
 COPY package.json package-lock.json ./
 RUN npm ci --prefer-offline
@@ -24,7 +26,7 @@ ENV MINIO_PORT=9000
 ENV MINIO_ACCESS_KEY=minioadmin
 ENV MINIO_SECRET_KEY=minioadmin
 ENV MINIO_BUCKET=systemato-media
-ENV MINIO_PUBLIC_URL=http://localhost:9000
+ENV MINIO_PUBLIC_URL=http://localhost:3000
 
 RUN npm run build
 
@@ -33,15 +35,15 @@ FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN groupadd --system --gid 1001 nodejs \
+    && useradd --system --uid 1001 --gid nodejs nextjs
 
 # کپی فایل‌های build شده
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# کپی prisma schema برای migrate در runtime
+# کپی prisma schema + engine برای runtime
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
