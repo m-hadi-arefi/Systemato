@@ -1,7 +1,5 @@
-version: '3.8'
-
 services:
-  # ── PostgreSQL ─────────────────────────────────────────────────────────
+  # ── PostgreSQL (فقط داخل شبکه، به بیرون expose نمی‌شود) ───────────────────
   db:
     image: postgres:16-alpine
     container_name: systemato_db
@@ -10,17 +8,22 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-systemato}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-    ports:
-      - "5432:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
+    networks:
+      - systemato_net
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-systemato}"]
       interval: 5s
       timeout: 5s
       retries: 10
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 384M
 
-  # ── MinIO ──────────────────────────────────────────────────────────────
+  # ── MinIO (فقط داخل شبکه، به بیرون expose نمی‌شود) ───────────────────────
   minio:
     image: minio/minio:latest
     container_name: systemato_minio
@@ -28,25 +31,31 @@ services:
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
-    ports:
-      - "9000:9000"
-      - "9001:9001"
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"
+    networks:
+      - systemato_net
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 10s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 384M
 
-  # ── MinIO bucket init ──────────────────────────────────────────────────
+  # ── MinIO bucket init ────────────────────────────────────────────────────
   minio-init:
     image: minio/mc:latest
     container_name: systemato_minio_init
     depends_on:
       minio:
         condition: service_healthy
+    networks:
+      - systemato_net
     entrypoint: >
       /bin/sh -c "
       /usr/bin/mc alias set local http://minio:9000 ${MINIO_ROOT_USER:-minioadmin} ${MINIO_ROOT_PASSWORD:-minioadmin};
@@ -56,7 +65,7 @@ services:
       "
     restart: "no"
 
-  # ── Prisma migrate ─────────────────────────────────────────────────────
+  # ── Prisma migrate (فقط داخل شبکه) ───────────────────────────────────────
   migrate:
     build:
       context: .
@@ -67,9 +76,11 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    networks:
+      - systemato_net
     restart: "no"
 
-  # ── Next.js App ────────────────────────────────────────────────────────
+  # ── Next.js App (تنها سرویسی که پورت ۳۰۰۰ را به بیرون expose می‌کند) ──────
   app:
     build:
       context: .
@@ -85,12 +96,13 @@ services:
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-change-me-in-production}
       KAVENEGAR_API_KEY: ${KAVENEGAR_API_KEY:-}
       KAVENEGAR_OTP_TEMPLATE: ${KAVENEGAR_OTP_TEMPLATE:-systemato-otp}
+      KAVENEGAR_SENDER: ${KAVENEGAR_SENDER:-}
       MINIO_ENDPOINT: minio
       MINIO_PORT: "9000"
       MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
       MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin}
       MINIO_BUCKET: ${MINIO_BUCKET:-systemato-media}
-      MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL:-http://localhost:9000}
+      MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL:-http://localhost:3000}
       CRON_SECRET: ${CRON_SECRET:-cron-secret}
     depends_on:
       db:
@@ -99,11 +111,24 @@ services:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
+    networks:
+      - systemato_net
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
+    # ── محدودیت منابع: ۱ هسته CPU و ۱.۵ گیگابایت رم ───────────────────────
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1536M
+
+# ── شبکهٔ اختصاصی bridge: ارتباط داخلی سرویس‌ها، فقط app به بیرون باز است ──
+networks:
+  systemato_net:
+    driver: bridge
 
 volumes:
   pg_data:
