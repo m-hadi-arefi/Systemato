@@ -21,7 +21,10 @@ export async function GET(req: NextRequest) {
       customerId: session.user.id,
       ...(business && { businessId: business.id }),
     },
-    include: { business: { select: { name: true, storeCode: true } } },
+    include: {
+      business: { select: { name: true, storeCode: true } },
+      service: { select: { name: true, duration: true } },
+    },
     orderBy: { datetime: 'desc' },
   })
 
@@ -40,7 +43,6 @@ export async function POST(req: NextRequest) {
   const business = await prisma.business.findUnique({ where: { id: parsed.data.businessId } })
   if (!business) return NextResponse.json({ error: 'not found' }, { status: 404 })
 
-  // بررسی عضویت
   const member = await prisma.businessMember.findUnique({
     where: { userId_businessId: { userId: session.user.id, businessId: business.id } },
   })
@@ -50,16 +52,15 @@ export async function POST(req: NextRequest) {
     data: {
       businessId: business.id,
       customerId: session.user.id,
+      serviceId: parsed.data.serviceId || null,
       datetime: new Date(parsed.data.datetime),
       note: parsed.data.note,
       status: 'PENDING',
     },
   })
 
-  // اطلاع به صاحب بیزینس
   const owner = await prisma.user.findUnique({ where: { id: business.ownerId } })
   if (owner) {
-    // اگر SMS_ENABLED غیرفعال باشد، sendSms به‌صورت no-op برمی‌گردد.
     sendSms(owner.phone, `درخواست نوبت جدید در ${business.name}`).catch(console.error)
   }
 

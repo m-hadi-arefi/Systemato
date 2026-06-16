@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 export const createAppointmentSchema = z.object({
   customerId: z.string().min(1, 'مشتری انتخاب نشده'),
+  serviceId: z.string().optional(),
   datetime: z.string().refine((v) => !isNaN(Date.parse(v)), 'تاریخ و ساعت معتبر نیست'),
   note: z.string().max(300).optional(),
 })
@@ -13,6 +14,7 @@ export const updateAppointmentSchema = z.object({
 
 export const customerBookSchema = z.object({
   businessId: z.string().min(1),
+  serviceId: z.string().optional(),
   datetime: z.string().refine((v) => !isNaN(Date.parse(v)), 'تاریخ و ساعت معتبر نیست'),
   note: z.string().max(300).optional(),
 })

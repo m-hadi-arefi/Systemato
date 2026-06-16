@@ -1,6 +1,15 @@
 import type { Metadata, Viewport } from 'next'
+import { Vazirmatn } from 'next/font/google'
 import './globals.css'
 import { Providers } from './providers'
+
+const vazirmatn = Vazirmatn({
+  subsets: ['arabic'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-vazirmatn',
+  display: 'swap',
+  preload: true,
+})
 
 export const metadata: Metadata = {
   title: 'Systemato | سیستماتو',
@@ -20,8 +29,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fa" dir="rtl" suppressHydrationWarning>
-      <body>
+    <html lang="fa" dir="rtl" suppressHydrationWarning className={vazirmatn.variable}>
+      <body style={{ fontFamily: 'var(--font-vazirmatn), Vazirmatn, sans-serif' }}>
         <Providers>{children}</Providers>
       </body>
     </html>

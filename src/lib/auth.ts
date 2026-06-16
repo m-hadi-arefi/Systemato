@@ -42,6 +42,11 @@ export const authOptions: NextAuthOptions = {
         if (!user) {
           const role = credentials.role === 'BUSINESS_OWNER' ? 'BUSINESS_OWNER' : 'CUSTOMER'
           user = await prisma.user.create({ data: { phone: credentials.phone, role } })
+        } else {
+          // Existing user: if they try to register as BUSINESS_OWNER but are CUSTOMER, block
+          if (credentials.role === 'BUSINESS_OWNER' && user.role === 'CUSTOMER') {
+            return null
+          }
         }
 
         // اگر مشتری با storeCode وارد شده، اضافه کن به بیزینس
@@ -66,7 +71,6 @@ export const authOptions: NextAuthOptions = {
               where: { referralCode: credentials.referralCode },
             })
             if (referrer) {
-              // تمدید ۱ ماه رایگان برای معرف
               const bonus = await import('./config').then((m) => m.getReferralBonus())
               await prisma.business.update({
                 where: { id: referrer.id },

@@ -11,19 +11,49 @@ const config: Config = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#0FB9B1',
-          hover: '#0A8F8B',
-          foreground: '#FAFAFA',
+          DEFAULT: 'var(--primary)',
+          hover: 'var(--primary-hover)',
+          foreground: 'var(--primary-foreground)',
+        },
+        secondary: {
+          DEFAULT: 'var(--secondary)',
+          foreground: 'var(--secondary-foreground)',
+        },
+        background: 'var(--background)',
+        foreground: 'var(--foreground)',
+        card: {
+          DEFAULT: 'var(--card)',
+          hover: 'var(--card-hover)',
+        },
+        border: 'var(--border)',
+        muted: {
+          DEFAULT: 'var(--muted)',
+          foreground: 'var(--muted-foreground)',
         },
         accent: {
           DEFAULT: '#F79621',
-          foreground: '#1D1D1D',
+          foreground: '#ffffff',
         },
-        snow: '#FAFAFA',
-        carbon: '#1D1D1D',
       },
       fontFamily: {
-        sans: ['var(--font-sans)', 'Vazirmatn', 'sans-serif'],
+        sans: ['var(--font-vazirmatn)', 'Vazirmatn', 'sans-serif'],
+      },
+      borderRadius: {
+        sm: 'var(--radius-sm)',
+        DEFAULT: 'var(--radius)',
+        lg: 'var(--radius-lg)',
+        xl: 'var(--radius-xl)',
+        '2xl': '24px',
+      },
+      boxShadow: {
+        sm: 'var(--shadow-sm)',
+        DEFAULT: 'var(--shadow)',
+        md: 'var(--shadow-md)',
+        lg: 'var(--shadow-lg)',
+      },
+      animation: {
+        'fade-in': 'fadeIn 0.2s ease-out',
+        'slide-up': 'slideUp 0.3s ease-out',
       },
     },
   },

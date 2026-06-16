@@ -2,41 +2,120 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap');
-
 :root {
+  /* Brand defaults */
   --primary: #0FB9B1;
   --primary-hover: #0A8F8B;
+  --primary-foreground: #ffffff;
+  --secondary: #F79621;
+  --secondary-foreground: #ffffff;
   --accent: #F79621;
-  --background: #FAFAFA;
-  --foreground: #1D1D1D;
+
+  /* Layout */
+  --background: #F8FAFC;
+  --foreground: #0F172A;
   --card: #ffffff;
-  --border: #e5e7eb;
-  --muted: #f3f4f6;
-  --muted-foreground: #6b7280;
+  --card-hover: #F8FAFC;
+  --border: #E2E8F0;
+  --muted: #F1F5F9;
+  --muted-foreground: #64748B;
+
+  /* Business theme overrides (injected by customer-facing pages) */
+  --biz-primary: var(--primary);
+  --biz-secondary: var(--secondary);
+  --biz-primary-foreground: var(--primary-foreground);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
 }
 
 .dark {
-  --background: #1D1D1D;
-  --foreground: #FAFAFA;
-  --card: #2a2a2a;
-  --border: #3a3a3a;
-  --muted: #2f2f2f;
-  --muted-foreground: #9ca3af;
+  --background: #0F172A;
+  --foreground: #F8FAFC;
+  --card: #1E293B;
+  --card-hover: #243044;
+  --border: #334155;
+  --muted: #1E293B;
+  --muted-foreground: #94A3B8;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
 }
 
-* { direction: rtl; }
+* {
+  direction: rtl;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
 
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: 'Vazirmatn', sans-serif;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'kern' 1;
+  text-rendering: optimizeLegibility;
 }
 
-/* کلاس‌های utility اختصاصی */
+/* Scrollbar styling */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted-foreground); }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Utility classes */
 @layer utilities {
   .bg-card { background-color: var(--card); }
   .border-default { border-color: var(--border); }
   .text-muted { color: var(--muted-foreground); }
+
+  .animate-fade-in {
+    animation: fadeIn 0.2s ease-out;
+  }
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Focus ring */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Selection */
+::selection {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+/* Leaflet map fixes */
+.leaflet-container {
+  font-family: inherit !important;
+  direction: ltr;
 }
