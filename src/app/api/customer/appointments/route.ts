@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { customerBookSchema } from '@/lib/validations/appointment'
-import { sendOtp } from '@/lib/sms'
+import { sendSms } from '@/lib/sms'
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions)
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
   // اطلاع به صاحب بیزینس
   const owner = await prisma.user.findUnique({ where: { id: business.ownerId } })
   if (owner && process.env.NODE_ENV === 'production') {
-    sendOtp(owner.phone, `درخواست نوبت جدید در ${business.name}`).catch(console.error)
+    sendSms(owner.phone, `درخواست نوبت جدید در ${business.name}`).catch(console.error)
   }
 
   return NextResponse.json(appointment, { status: 201 })
