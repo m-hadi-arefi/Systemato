@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  BUSINESS_OWNER
+  CUSTOMER
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  DONE
+  CANCELLED
+}
+
+model User {
+  id           String           @id @default(cuid())
+  phone        String           @unique
+  name         String?
+  role         Role             @default(CUSTOMER)
+  createdAt    DateTime         @default(now())
+  business     Business?
+  memberships  BusinessMember[]
+  appointments Appointment[]    @relation("CustomerAppointments")
+}
+
+model Business {
+  id           String           @id @default(cuid())
+  name         String
+  address      String?
+  phone        String?
+  description  String?
+  logoUrl      String?
+  workingHours Json?
+  storeCode    String           @unique
+  referralCode String           @unique
+  referredBy   String?
+  freeUntil    DateTime
+  ownerId      String           @unique
+  owner        User             @relation(fields: [ownerId], references: [id])
+  members      BusinessMember[]
+  appointments Appointment[]
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+}
+
+model BusinessMember {
+  id         String   @id @default(cuid())
+  userId     String
+  businessId String
+  user       User     @relation(fields: [userId], references: [id])
+  business   Business @relation(fields: [businessId], references: [id])
+  joinedAt   DateTime @default(now())
+
+  @@unique([userId, businessId])
+}
+
+model Appointment {
+  id         String            @id @default(cuid())
+  businessId String
+  customerId String
+  datetime   DateTime
+  status     AppointmentStatus @default(PENDING)
+  note       String?
+  business   Business          @relation(fields: [businessId], references: [id])
+  customer   User              @relation("CustomerAppointments", fields: [customerId], references: [id])
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+}
+
+model OtpCode {
+  id        String   @id @default(cuid())
+  phone     String
+  code      String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([phone])
+}
+
+model SystemConfig {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}
