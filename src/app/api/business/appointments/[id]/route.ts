@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { updateAppointmentSchema } from '@/lib/validations/appointment'
-import { sendOtp } from '@/lib/sms'
+import { sendSms } from '@/lib/sms'
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)
@@ -38,7 +38,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
   const msg = messages[parsed.data.status]
   if (msg && process.env.NODE_ENV === 'production') {
-    sendOtp(appointment.customer.phone, msg).catch(console.error)
+    sendSms(appointment.customer.phone, msg).catch(console.error)
   }
 
   return NextResponse.json(updated)

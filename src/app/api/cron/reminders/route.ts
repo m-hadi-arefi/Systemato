@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { sendOtp } from '@/lib/sms'
+import { sendSms } from '@/lib/sms'
 import { addDays, startOfDay, endOfDay } from 'date-fns'
 
 // این route با Vercel Cron هر شب اجرا می‌شود
@@ -25,7 +25,7 @@ export async function GET(req: Request) {
   const results = await Promise.allSettled(
     appointments.map((a) => {
       const dt = a.datetime.toLocaleString('fa-IR', { hour: '2-digit', minute: '2-digit' })
-      return sendOtp(
+      return sendSms(
         a.customer.phone,
         `یادآوری: نوبت شما فردا ساعت ${dt} در ${a.business.name}`
       )
