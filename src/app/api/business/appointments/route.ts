@@ -24,11 +24,30 @@ export async function GET(req: NextRequest) {
       businessId: business.id,
       ...(status && { status: status as never }),
     },
-    include: { customer: { select: { id: true, name: true, phone: true } } },
+    include: {
+      customer: { select: { id: true, name: true, phone: true } },
+      service: { select: { id: true, name: true, duration: true } },
+    },
     orderBy: { datetime: 'asc' },
   })
 
-  return NextResponse.json(appointments)
+  // Resolve customer display names from BusinessMember.displayName
+  const memberMap = new Map<string, string | null>()
+  const memberRecords = await prisma.businessMember.findMany({
+    where: { businessId: business.id },
+    select: { userId: true, displayName: true },
+  })
+  memberRecords.forEach((m) => memberMap.set(m.userId, m.displayName))
+
+  const enriched = appointments.map((a) => ({
+    ...a,
+    customer: {
+      ...a.customer,
+      name: memberMap.get(a.customerId) || a.customer.name,
+    },
+  }))
+
+  return NextResponse.json(enriched)
 }
 
 export async function POST(req: NextRequest) {
@@ -44,7 +63,6 @@ export async function POST(req: NextRequest) {
   if (!parsed.success)
     return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 })
 
-  // بررسی که مشتری عضو این بیزینس است
   const member = await prisma.businessMember.findUnique({
     where: { userId_businessId: { userId: parsed.data.customerId, businessId: business.id } },
   })
@@ -55,11 +73,15 @@ export async function POST(req: NextRequest) {
     data: {
       businessId: business.id,
       customerId: parsed.data.customerId,
+      serviceId: parsed.data.serviceId || null,
       datetime: new Date(parsed.data.datetime),
       note: parsed.data.note,
       status: 'CONFIRMED',
     },
-    include: { customer: { select: { id: true, name: true, phone: true } } },
+    include: {
+      customer: { select: { id: true, name: true, phone: true } },
+      service: { select: { id: true, name: true, duration: true } },
+    },
   })
 
   return NextResponse.json(appointment, { status: 201 })

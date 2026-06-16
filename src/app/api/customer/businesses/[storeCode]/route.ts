@@ -10,13 +10,14 @@ export async function GET(_req: NextRequest, { params }: { params: { storeCode: 
   const business = await prisma.business.findUnique({
     where: { storeCode: params.storeCode },
     select: {
-      id: true, name: true, address: true, phone: true,
-      description: true, logoUrl: true, workingHours: true, storeCode: true,
+      id: true, name: true, address: true, latitude: true, longitude: true,
+      phone: true, description: true, logoUrl: true, coverImageUrl: true,
+      workingHours: true, storeCode: true, primaryColor: true, secondaryColor: true,
+      services: { where: { active: true }, orderBy: { createdAt: 'asc' } },
     },
   })
   if (!business) return NextResponse.json({ error: 'not found' }, { status: 404 })
 
-  // بررسی که کاربر عضو این بیزینس است
   const member = await prisma.businessMember.findUnique({
     where: { userId_businessId: { userId: session.user.id, businessId: business.id } },
   })

@@ -32,45 +32,68 @@ model User {
 }
 
 model Business {
-  id           String           @id @default(cuid())
-  name         String
-  address      String?
-  phone        String?
-  description  String?
-  logoUrl      String?
-  workingHours Json?
-  storeCode    String           @unique
-  referralCode String           @unique
-  referredBy   String?
-  freeUntil    DateTime
-  ownerId      String           @unique
-  owner        User             @relation(fields: [ownerId], references: [id])
-  members      BusinessMember[]
-  appointments Appointment[]
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
+  id             String           @id @default(cuid())
+  name           String
+  address        String?
+  latitude       Float?
+  longitude      Float?
+  phone          String?
+  description    String?
+  logoUrl        String?
+  coverImageUrl  String?
+  primaryColor   String?
+  secondaryColor String?
+  workingHours   Json?
+  storeCode      String           @unique
+  referralCode   String           @unique
+  referredBy     String?
+  freeUntil      DateTime
+  ownerId        String           @unique
+  owner          User             @relation(fields: [ownerId], references: [id])
+  members        BusinessMember[]
+  appointments   Appointment[]
+  services       Service[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
 }
 
 model BusinessMember {
-  id         String   @id @default(cuid())
-  userId     String
-  businessId String
-  user       User     @relation(fields: [userId], references: [id])
-  business   Business @relation(fields: [businessId], references: [id])
-  joinedAt   DateTime @default(now())
+  id          String   @id @default(cuid())
+  userId      String
+  businessId  String
+  displayName String?
+  user        User     @relation(fields: [userId], references: [id])
+  business    Business @relation(fields: [businessId], references: [id])
+  joinedAt    DateTime @default(now())
 
   @@unique([userId, businessId])
+}
+
+model Service {
+  id           String        @id @default(cuid())
+  businessId   String
+  name         String
+  description  String?
+  duration     Int
+  price        Int?
+  active       Boolean       @default(true)
+  business     Business      @relation(fields: [businessId], references: [id])
+  appointments Appointment[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 }
 
 model Appointment {
   id         String            @id @default(cuid())
   businessId String
   customerId String
+  serviceId  String?
   datetime   DateTime
   status     AppointmentStatus @default(PENDING)
   note       String?
   business   Business          @relation(fields: [businessId], references: [id])
   customer   User              @relation("CustomerAppointments", fields: [customerId], references: [id])
+  service    Service?          @relation(fields: [serviceId], references: [id])
   createdAt  DateTime          @default(now())
   updatedAt  DateTime          @updatedAt
 }

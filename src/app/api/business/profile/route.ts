@@ -30,10 +30,15 @@ export async function PUT(req: NextRequest) {
     data: {
       name: parsed.data.name,
       address: parsed.data.address,
+      latitude: parsed.data.latitude ?? null,
+      longitude: parsed.data.longitude ?? null,
       phone: parsed.data.phone || null,
       description: parsed.data.description,
-      workingHours: parsed.data.workingHours,
-      ...(body.logoUrl && { logoUrl: body.logoUrl }),
+      workingHours: parsed.data.workingHours as object,
+      primaryColor: parsed.data.primaryColor || null,
+      secondaryColor: parsed.data.secondaryColor || null,
+      ...(body.logoUrl !== undefined && { logoUrl: body.logoUrl }),
+      ...(body.coverImageUrl !== undefined && { coverImageUrl: body.coverImageUrl }),
     },
   })
 

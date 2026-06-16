@@ -57,7 +57,7 @@ export default function ReferralPage() {
           </div>
           {!data.isActive && (
             <Link href="/business/subscription">
-              <Button size="sm" variant="accent">تمدید</Button>
+              <Button size="sm" variant="primary">تمدید</Button>
             </Link>
           )}
         </div>

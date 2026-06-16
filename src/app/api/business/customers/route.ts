@@ -23,19 +23,30 @@ export async function GET(req: NextRequest) {
     where: {
       businessId: business.id,
       ...(q && {
-        user: {
-          OR: [
+        OR: [
+          { displayName: { contains: q, mode: 'insensitive' } },
+          { user: { OR: [
             { name: { contains: q, mode: 'insensitive' } },
             { phone: { contains: q } },
-          ],
-        },
+          ]}},
+        ],
       }),
     },
     include: { user: true },
     orderBy: { joinedAt: 'desc' },
   })
 
-  return NextResponse.json(members.map((m) => ({ ...m.user, joinedAt: m.joinedAt })))
+  return NextResponse.json(
+    members.map((m) => ({
+      id: m.user.id,
+      phone: m.user.phone,
+      name: m.displayName || m.user.name,
+      globalName: m.user.name,
+      displayName: m.displayName,
+      joinedAt: m.joinedAt,
+      memberId: m.id,
+    }))
+  )
 }
 
 export async function POST(req: NextRequest) {
@@ -51,19 +62,33 @@ export async function POST(req: NextRequest) {
   if (!parsed.success)
     return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 })
 
+  // Global user identity: search by phone first
   let user = await prisma.user.findUnique({ where: { phone: parsed.data.phone } })
+
   if (!user) {
+    // Create new user only if phone doesn't exist
     user = await prisma.user.create({
       data: { phone: parsed.data.phone, name: parsed.data.name, role: 'CUSTOMER' },
     })
-  } else if (parsed.data.name && !user.name) {
-    await prisma.user.update({ where: { id: user.id }, data: { name: parsed.data.name } })
   }
 
+  // Check that user is not a business owner
+  if (user.role === 'BUSINESS_OWNER') {
+    return NextResponse.json(
+      { error: 'این شماره متعلق به یک صاحب بیزینس است و نمی‌تواند مشتری باشد' },
+      { status: 400 }
+    )
+  }
+
+  // Upsert BusinessMember — update displayName if provided
   await prisma.businessMember.upsert({
     where: { userId_businessId: { userId: user.id, businessId: business.id } },
-    update: {},
-    create: { userId: user.id, businessId: business.id },
+    update: { ...(parsed.data.name && { displayName: parsed.data.name }) },
+    create: {
+      userId: user.id,
+      businessId: business.id,
+      displayName: parsed.data.name || null,
+    },
   })
 
   return NextResponse.json({ success: true, customer: user })
