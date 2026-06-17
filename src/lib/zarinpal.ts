@@ -1,6 +1,10 @@
-const ZARINPAL_REQUEST_URL = 'https://payment.zarinpal.com/pg/v4/payment/request.json'
-const ZARINPAL_VERIFY_URL = 'https://payment.zarinpal.com/pg/v4/payment/verify.json'
-export const ZARINPAL_START_PAY_URL = 'https://payment.zarinpal.com/pg/StartPay/'
+function getBaseUrl(): string {
+  return (process.env.ZARINPAL_BASE_URL ?? 'https://payment.zarinpal.com').replace(/\/$/, '')
+}
+
+function getStartPayUrl(): string {
+  return `${getBaseUrl()}/pg/StartPay/`
+}
 
 export async function requestPayment({
   amount,
@@ -14,7 +18,7 @@ export async function requestPayment({
   const merchantId = process.env.ZARINPAL_MERCHANT_ID
   if (!merchantId) throw new Error('ZARINPAL_MERCHANT_ID تنظیم نشده')
 
-  const res = await fetch(ZARINPAL_REQUEST_URL, {
+  const res = await fetch(`${getBaseUrl()}/pg/v4/payment/request.json`, {
     method: 'POST',
     headers: { 'content-type': 'application/json', accept: 'application/json' },
     body: JSON.stringify({
@@ -43,7 +47,7 @@ export async function verifyPayment({
   const merchantId = process.env.ZARINPAL_MERCHANT_ID
   if (!merchantId) throw new Error('ZARINPAL_MERCHANT_ID تنظیم نشده')
 
-  const res = await fetch(ZARINPAL_VERIFY_URL, {
+  const res = await fetch(`${getBaseUrl()}/pg/v4/payment/verify.json`, {
     method: 'POST',
     headers: { 'content-type': 'application/json', accept: 'application/json' },
     body: JSON.stringify({
@@ -60,3 +64,5 @@ export async function verifyPayment({
   if (code === 101) return { verified: true, refId: json.data.ref_id, alreadyVerified: true }
   return { verified: false, refId: null, alreadyVerified: false }
 }
+
+export { getStartPayUrl }

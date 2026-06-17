@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { getSubscriptionPrice } from '@/lib/config'
-import { requestPayment, ZARINPAL_START_PAY_URL } from '@/lib/zarinpal'
+import { requestPayment, getStartPayUrl } from '@/lib/zarinpal'
 import { z } from 'zod'
 
 const schema = z.object({ months: z.number().int().min(1).max(12) })
@@ -43,5 +43,5 @@ export async function POST(req: NextRequest) {
     },
   })
 
-  return NextResponse.json({ url: `${ZARINPAL_START_PAY_URL}${authority}` })
+  return NextResponse.json({ url: `${getStartPayUrl()}${authority}` })
 }
