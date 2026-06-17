@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { RealtimeStatus } from '@/components/shared/RealtimeStatus'
 
 const navItems = [
   {
@@ -92,6 +93,9 @@ export function BusinessNav() {
         </nav>
 
         <div className="p-3 border-t border-[var(--border)] space-y-1">
+          <div className="px-3 py-2">
+            <RealtimeStatus />
+          </div>
           <Link
             href="/business/subscription"
             className={cn(

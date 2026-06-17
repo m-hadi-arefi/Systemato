@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Card } from '@/components/shared/Card'
 import { Button } from '@/components/shared/Button'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useSmartRefresh } from '@/hooks/useSmartRefresh'
 import { formatPersianDateTime, formatPersianDate } from '@/lib/persian-date'
 
 const statusConfig: Record<string, { label: string; color: string; dot: string }> = {
@@ -28,11 +29,14 @@ export default function CustomerAppointmentsPage({ params }: { params: { storeCo
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
+  const fetchAppointments = useCallback(() => {
     fetch(`/api/customer/appointments?storeCode=${params.storeCode}`)
       .then(r => r.json())
       .then(data => { setAppointments(data); setLoading(false) })
   }, [params.storeCode])
+
+  useEffect(() => { fetchAppointments() }, [fetchAppointments])
+  useSmartRefresh(fetchAppointments)
 
   const now = new Date()
   const upcoming = appointments.filter(

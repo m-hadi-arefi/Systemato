@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { createAppointmentSchema, type CreateAppointmentInput } from '@/lib/validations/appointment'
@@ -10,6 +10,7 @@ import { Input } from '@/components/shared/Input'
 import { CustomerSearch } from '@/components/shared/CustomerSearch'
 import toast from 'react-hot-toast'
 import { formatRelativePersian } from '@/lib/persian-date'
+import { useSmartRefresh } from '@/hooks/useSmartRefresh'
 
 type Status = 'ALL' | 'PENDING' | 'CONFIRMED' | 'DONE' | 'CANCELLED'
 
@@ -50,13 +51,14 @@ export default function AppointmentsPage() {
 
   const customerId = watch('customerId') || ''
 
-  async function fetchAppointments() {
+  const fetchAppointments = useCallback(async () => {
     const params = tab !== 'ALL' ? `?status=${tab}` : ''
     const res = await fetch(`/api/business/appointments${params}`)
     if (res.ok) setAppointments(await res.json())
-  }
+  }, [tab])
 
-  useEffect(() => { fetchAppointments() }, [tab])
+  useEffect(() => { fetchAppointments() }, [fetchAppointments])
+  useSmartRefresh(fetchAppointments)
 
   useEffect(() => {
     fetch('/api/business/customers').then(r => r.json()).then(setCustomers)

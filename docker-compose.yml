@@ -80,6 +80,26 @@ services:
       - systemato_net
     restart: "no"
 
+  # ── Redis (برای future multi-instance pub/sub) ───────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: systemato_redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - systemato_net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 128M
+
   # ── Next.js App (تنها سرویسی که پورت ۳۰۰۰ را به بیرون expose می‌کند) ──────
   app:
     build:
@@ -109,6 +129,8 @@ services:
       ZARINPAL_MERCHANT_ID: ${ZARINPAL_MERCHANT_ID:-}
       ZARINPAL_BASE_URL: ${ZARINPAL_BASE_URL:-https://payment.zarinpal.com}
       NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-${NEXTAUTH_URL:-http://localhost:3000}}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      WS_HEARTBEAT_MS: ${WS_HEARTBEAT_MS:-30000}
     depends_on:
       db:
         condition: service_healthy
@@ -116,6 +138,8 @@ services:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
+      redis:
+        condition: service_healthy
     networks:
       - systemato_net
     healthcheck:
@@ -138,3 +162,4 @@ networks:
 volumes:
   pg_data:
   minio_data:
+  redis_data:

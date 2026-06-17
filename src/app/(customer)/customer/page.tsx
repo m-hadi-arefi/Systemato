@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Card } from '@/components/shared/Card'
 import Image from 'next/image'
+import { RouteRefresher } from '@/components/shared/RouteRefresher'
 
 export default async function CustomerHomePage() {
   const session = await getServerSession(authOptions)
@@ -33,6 +34,7 @@ export default async function CustomerHomePage() {
 
   return (
     <div className="space-y-4">
+      <RouteRefresher />
       <h1 className="text-xl font-bold text-[var(--foreground)]">بیزینس‌های شما</h1>
       <div className="space-y-3">
         {memberships.map(({ business }) => (

@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { customerBookSchema } from '@/lib/validations/appointment'
 import { sendSms } from '@/lib/sms'
+import { eventBus } from '@/lib/realtime/eventBus'
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions)
@@ -63,6 +64,19 @@ export async function POST(req: NextRequest) {
   if (owner) {
     sendSms(owner.phone, `درخواست نوبت جدید در ${business.name}`).catch(console.error)
   }
+
+  eventBus.emit({
+    type: 'appointment.created',
+    payload: {
+      appointmentId: appointment.id,
+      businessId: business.id,
+      storeCode: business.storeCode,
+      customerId: session.user.id,
+      ownerId: business.ownerId,
+      datetime: appointment.datetime.toISOString(),
+      status: appointment.status as 'PENDING',
+    },
+  })
 
   return NextResponse.json(appointment, { status: 201 })
 }

@@ -4,8 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "build": "next build && tsc -p tsconfig.server.json",
+    "build:server": "tsc -p tsconfig.server.json",
+    "start": "node dist-server/server.js",
+    "start:next": "next start",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
@@ -31,12 +33,14 @@
     "react-hook-form": "^7.51.5",
     "react-hot-toast": "^2.4.1",
     "tailwind-merge": "^3.6.0",
+    "ws": "^8.21.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@types/ws": "^8.18.1",
     "autoprefixer": "^10.4.19",
     "postcss": "^8.4.38",
     "prisma": "^5.14.0",

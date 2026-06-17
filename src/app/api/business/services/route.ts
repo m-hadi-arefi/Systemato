@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { createServiceSchema } from '@/lib/validations/business'
+import { eventBus } from '@/lib/realtime/eventBus'
 
 async function getBusiness(ownerId: string) {
   return prisma.business.findUnique({ where: { ownerId } })
@@ -39,6 +40,16 @@ export async function POST(req: NextRequest) {
 
   const service = await prisma.service.create({
     data: { ...parsed.data, businessId: business.id },
+  })
+
+  eventBus.emit({
+    type: 'service.created',
+    payload: {
+      serviceId: service.id,
+      businessId: business.id,
+      storeCode: business.storeCode,
+      ownerId: session.user.id,
+    },
   })
 
   return NextResponse.json(service, { status: 201 })

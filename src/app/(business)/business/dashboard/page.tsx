@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { formatPersianDateTime, formatPersianDate } from '@/lib/persian-date'
+import { RouteRefresher } from '@/components/shared/RouteRefresher'
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
@@ -55,6 +56,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8 animate-fade-in">
+      <RouteRefresher />
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
