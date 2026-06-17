@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { addCustomerSchema, type AddCustomerInput } from '@/lib/validations/business'
@@ -10,6 +10,7 @@ import { Card } from '@/components/shared/Card'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 import { formatPersianDate } from '@/lib/persian-date'
+import { useSmartRefresh } from '@/hooks/useSmartRefresh'
 
 interface Customer {
   id: string
@@ -29,16 +30,20 @@ export default function CustomersPage() {
     resolver: zodResolver(addCustomerSchema),
   })
 
-  async function fetchCustomers(q = '') {
-    const res = await fetch(`/api/business/customers?q=${encodeURIComponent(q)}`)
-    if (res.ok) setCustomers(await res.json())
-  }
+  const searchRef = useRef(search)
+  searchRef.current = search
 
-  useEffect(() => { fetchCustomers() }, [])
+  const fetchCustomers = useCallback(async () => {
+    const res = await fetch(`/api/business/customers?q=${encodeURIComponent(searchRef.current)}`)
+    if (res.ok) setCustomers(await res.json())
+  }, [])
+
+  useEffect(() => { fetchCustomers() }, [fetchCustomers])
   useEffect(() => {
-    const t = setTimeout(() => fetchCustomers(search), 300)
+    const t = setTimeout(() => fetchCustomers(), 300)
     return () => clearTimeout(t)
   }, [search])
+  useSmartRefresh(fetchCustomers)
 
   async function onSubmit(data: AddCustomerInput) {
     setLoading(true)

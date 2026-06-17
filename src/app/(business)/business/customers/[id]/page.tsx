@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Card } from '@/components/shared/Card'
 import { Button } from '@/components/shared/Button'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useSmartRefresh } from '@/hooks/useSmartRefresh'
 import { formatPersianDateTime } from '@/lib/persian-date'
 
 const statusLabels: Record<string, { label: string; color: string }> = {
@@ -18,9 +19,12 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
   const router = useRouter()
   const [data, setData] = useState<{ customer: { id: string; name: string | null; phone: string }; appointments: Array<{ id: string; datetime: string; status: string; note: string | null }> } | null>(null)
 
-  useEffect(() => {
+  const fetchData = useCallback(async () => {
     fetch(`/api/business/customers/${params.id}`).then(r => r.json()).then(setData)
   }, [params.id])
+
+  useEffect(() => { fetchData() }, [fetchData])
+  useSmartRefresh(fetchData)
 
   if (!data) return <div className="flex items-center justify-center h-40"><div className="animate-spin text-2xl">⏳</div></div>
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { createServiceSchema, type CreateServiceInput } from '@/lib/validations/business'
@@ -8,6 +8,7 @@ import { Input } from '@/components/shared/Input'
 import { Button } from '@/components/shared/Button'
 import { Card } from '@/components/shared/Card'
 import toast from 'react-hot-toast'
+import { useSmartRefresh } from '@/hooks/useSmartRefresh'
 
 interface Service {
   id: string
@@ -42,12 +43,13 @@ export default function ServicesPage() {
     defaultValues: { active: true },
   })
 
-  async function fetchServices() {
+  const fetchServices = useCallback(async () => {
     const res = await fetch('/api/business/services')
     if (res.ok) setServices(await res.json())
-  }
+  }, [])
 
-  useEffect(() => { fetchServices() }, [])
+  useEffect(() => { fetchServices() }, [fetchServices])
+  useSmartRefresh(fetchServices)
 
   async function onSubmit(data: CreateServiceInput) {
     setLoading(true)

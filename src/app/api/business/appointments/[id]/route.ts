@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { updateAppointmentSchema } from '@/lib/validations/appointment'
 import { sendSms } from '@/lib/sms'
 import { formatPersianDateTime } from '@/lib/persian-date'
+import { eventBus } from '@/lib/realtime/eventBus'
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)
@@ -42,6 +43,19 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     // اگر SMS_ENABLED غیرفعال باشد، sendSms به‌صورت no-op برمی‌گردد.
     sendSms(appointment.customer.phone, msg).catch(console.error)
   }
+
+  eventBus.emit({
+    type: 'appointment.updated',
+    payload: {
+      appointmentId: params.id,
+      businessId: business.id,
+      storeCode: business.storeCode,
+      customerId: appointment.customerId,
+      ownerId: session.user.id,
+      datetime: appointment.datetime.toISOString(),
+      status: updated.status,
+    },
+  })
 
   return NextResponse.json(updated)
 }

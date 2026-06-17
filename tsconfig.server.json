@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "target": "es2020",
+    "outDir": "dist-server",
+    "rootDir": "src",
+    "noEmit": false,
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "incremental": false
+  },
+  "include": [
+    "src/server.ts",
+    "src/lib/realtime/types.ts",
+    "src/lib/realtime/eventBus.ts",
+    "src/lib/realtime/wsManager.ts"
+  ],
+  "exclude": ["node_modules", ".next"]
+}

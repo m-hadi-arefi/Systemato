@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { businessProfileSchema } from '@/lib/validations/business'
+import { eventBus } from '@/lib/realtime/eventBus'
 
 export async function GET() {
   const session = await getServerSession(authOptions)
@@ -39,6 +40,16 @@ export async function PUT(req: NextRequest) {
       secondaryColor: parsed.data.secondaryColor || null,
       ...(body.logoUrl !== undefined && { logoUrl: body.logoUrl }),
       ...(body.coverImageUrl !== undefined && { coverImageUrl: body.coverImageUrl }),
+    },
+  })
+
+  eventBus.emit({
+    type: 'business.updated',
+    payload: {
+      businessId: business.id,
+      storeCode: business.storeCode,
+      ownerId: session.user.id,
+      changedFields: ['profile'],
     },
   })
 

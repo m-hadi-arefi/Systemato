@@ -4,6 +4,7 @@ import { prisma } from './prisma'
 import { addDays } from 'date-fns'
 import { generateStoreCode } from './utils'
 import { getReferralSignupBonus, getTrialDays } from './config'
+import { eventBus } from './realtime/eventBus'
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: 'jwt' },
@@ -55,10 +56,20 @@ export const authOptions: NextAuthOptions = {
             where: { storeCode: credentials.storeCode },
           })
           if (business) {
-            await prisma.businessMember.upsert({
+            const member = await prisma.businessMember.upsert({
               where: { userId_businessId: { userId: user.id, businessId: business.id } },
               update: {},
               create: { userId: user.id, businessId: business.id },
+            })
+            eventBus.emit({
+              type: 'businessMember.created',
+              payload: {
+                memberId: member.id,
+                businessId: business.id,
+                storeCode: business.storeCode,
+                ownerId: business.ownerId,
+                customerId: user.id,
+              },
             })
           }
         }
@@ -72,9 +83,19 @@ export const authOptions: NextAuthOptions = {
             })
             if (referrer) {
               const bonus = await import('./config').then((m) => m.getReferralBonus())
-              await prisma.business.update({
+              const updated = await prisma.business.update({
                 where: { id: referrer.id },
                 data: { freeUntil: addDays(referrer.freeUntil, bonus) },
+              })
+              eventBus.emit({
+                type: 'business.updated',
+                payload: {
+                  businessId: referrer.id,
+                  storeCode: referrer.storeCode,
+                  ownerId: referrer.ownerId,
+                  changedFields: ['subscription'],
+                  newFreeUntil: updated.freeUntil.toISOString(),
+                },
               })
             }
           }

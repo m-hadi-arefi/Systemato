@@ -38,10 +38,16 @@ ENV NODE_ENV=production
 RUN groupadd --system --gid 1001 nodejs \
     && useradd --system --uid 1001 --gid nodejs nextjs
 
-# کپی فایل‌های build شده
+# کپی فایل‌های build شده (Next.js standalone)
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# کپی custom server (compiled from src/server.ts)
+COPY --from=builder --chown=nextjs:nodejs /app/dist-server ./dist-server
+
+# ws نیاز به کپی صریح دارد چون Next.js standalone آن را trace نمی‌کند
+COPY --from=builder /app/node_modules/ws ./node_modules/ws
 
 # کپی prisma schema + engine برای runtime
 COPY --from=builder /app/prisma ./prisma
@@ -53,4 +59,4 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
-CMD ["node", "server.js"]
+CMD ["node", "dist-server/server.js"]

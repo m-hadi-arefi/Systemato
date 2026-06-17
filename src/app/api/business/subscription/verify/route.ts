@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { verifyPayment } from '@/lib/zarinpal'
 import { addDays } from 'date-fns'
+import { eventBus } from '@/lib/realtime/eventBus'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl
@@ -48,6 +49,28 @@ export async function GET(req: NextRequest) {
       data: { freeUntil: newFreeUntil },
     }),
   ])
+
+  eventBus.emit({
+    type: 'payment.verified',
+    payload: {
+      paymentId: payment.id,
+      businessId: payment.businessId,
+      ownerId: payment.business.ownerId,
+      amount: payment.amount,
+      newFreeUntil: newFreeUntil.toISOString(),
+    },
+  })
+
+  eventBus.emit({
+    type: 'business.updated',
+    payload: {
+      businessId: payment.businessId,
+      storeCode: payment.business.storeCode,
+      ownerId: payment.business.ownerId,
+      changedFields: ['subscription'],
+      newFreeUntil: newFreeUntil.toISOString(),
+    },
+  })
 
   return NextResponse.redirect(`${basePath}?success=1&ref=${result.refId}`)
 }
