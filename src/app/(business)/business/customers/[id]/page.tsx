@@ -5,6 +5,7 @@ import { Card } from '@/components/shared/Card'
 import { Button } from '@/components/shared/Button'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { formatPersianDateTime } from '@/lib/persian-date'
 
 const statusLabels: Record<string, { label: string; color: string }> = {
   PENDING: { label: 'در انتظار', color: 'bg-yellow-100 text-yellow-700' },
@@ -59,7 +60,7 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
             <Card key={a.id} className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-[var(--foreground)]">
-                  {new Date(a.datetime).toLocaleString('fa-IR')}
+                  {formatPersianDateTime(a.datetime)}
                 </p>
                 {a.note && <p className="text-xs text-[var(--muted-foreground)] mt-0.5">{a.note}</p>}
               </div>
