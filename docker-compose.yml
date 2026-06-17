@@ -106,6 +106,9 @@ services:
       MINIO_BUCKET: ${MINIO_BUCKET:-systemato-media}
       MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL:-http://localhost:3000}
       CRON_SECRET: ${CRON_SECRET:-cron-secret}
+      ZARINPAL_MERCHANT_ID: ${ZARINPAL_MERCHANT_ID:-}
+      ZARINPAL_BASE_URL: ${ZARINPAL_BASE_URL:-https://payment.zarinpal.com}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-${NEXTAUTH_URL:-http://localhost:3000}}
     depends_on:
       db:
         condition: service_healthy

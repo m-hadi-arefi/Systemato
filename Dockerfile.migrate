@@ -10,4 +10,6 @@ RUN npm ci --prefer-offline
 COPY prisma ./prisma
 RUN npx prisma generate
 
-CMD ["npx", "prisma", "migrate", "deploy"]
+# db push مستقیماً schema.prisma را با دیتابیس sync می‌کند.
+# هر بار که مدل جدیدی اضافه شود، بدون نیاز به ساخت فایل migration، جدول ساخته می‌شود.
+CMD ["npx", "prisma", "db", "push", "--accept-data-loss"]
