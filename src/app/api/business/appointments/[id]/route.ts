@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { updateAppointmentSchema } from '@/lib/validations/appointment'
 import { sendSms } from '@/lib/sms'
+import { formatPersianDateTime } from '@/lib/persian-date'
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)
@@ -30,7 +31,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   })
 
   // ارسال SMS به مشتری
-  const dt = appointment.datetime.toLocaleString('fa-IR')
+  const dt = formatPersianDateTime(appointment.datetime)
   const messages: Record<string, string> = {
     CONFIRMED: `نوبت شما در ${business.name} تأیید شد: ${dt}`,
     CANCELLED: `نوبت شما در ${business.name} لغو شد`,

@@ -5,6 +5,7 @@ import { Card } from '@/components/shared/Card'
 import { Button } from '@/components/shared/Button'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
+import { formatPersianDate } from '@/lib/persian-date'
 
 interface ReferralData {
   referralCode: string
@@ -51,7 +52,7 @@ export default function ReferralPage() {
             </p>
             <p className="text-sm text-[var(--muted-foreground)] mt-1">
               {data.isActive
-                ? `تا ${freeUntilDate.toLocaleDateString('fa-IR')} (${daysLeft} روز دیگر)`
+                ? `تا ${formatPersianDate(freeUntilDate)} (${daysLeft} روز دیگر)`
                 : 'دوره رایگان به پایان رسیده'}
             </p>
           </div>
