@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Card } from '@/components/shared/Card'
 import { Button } from '@/components/shared/Button'
@@ -28,7 +28,7 @@ interface SubscriptionData {
 
 const MONTH_OPTIONS = [1, 3, 6, 12]
 
-export default function SubscriptionPage() {
+function SubscriptionContent() {
   const searchParams = useSearchParams()
   const [data, setData] = useState<SubscriptionData | null>(null)
   const [selectedMonths, setSelectedMonths] = useState(1)
@@ -160,7 +160,11 @@ export default function SubscriptionPage() {
           </div>
           <div className="border-t border-[var(--border)] pt-2 space-y-1 text-xs text-[var(--muted-foreground)]">
             <p>
-              📅 با خرید این اشتراک، <span className="font-semibold text-[var(--foreground)]">{selectedMonths} ماه ({selectedMonths * 30} روز)</span> به اعتبار شما اضافه می‌شود
+              📅 با خرید این اشتراک،{' '}
+              <span className="font-semibold text-[var(--foreground)]">
+                {selectedMonths} ماه ({selectedMonths * 30} روز)
+              </span>{' '}
+              به اعتبار شما اضافه می‌شود
             </p>
             <p>
               📆 تاریخ انقضای جدید:{' '}
@@ -202,5 +206,17 @@ export default function SubscriptionPage() {
         </Card>
       )}
     </div>
+  )
+}
+
+export default function SubscriptionPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin text-3xl">⏳</div>
+      </div>
+    }>
+      <SubscriptionContent />
+    </Suspense>
   )
 }
